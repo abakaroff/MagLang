@@ -29,9 +29,13 @@ project/
 └── Makefile                   // Сборка проекта
 ```
 
-## Установка
+## Установка и запуск
 ```maglang
 git clone https://github.com/abakaroff/MagLang
+```
+```maglang
 mingw32-make
+```
+```maglang
 .\interpretator
 ```
