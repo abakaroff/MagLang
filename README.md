@@ -27,3 +27,11 @@ project/
 │       ├── executor.h
 │       └── executor.c
 └── Makefile                   // Сборка проекта
+```
+
+## Установка
+```maglang
+git clone https://github.com/abakaroff/MagLang
+mingw32-make
+.\interpretator
+```
