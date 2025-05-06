@@ -10,7 +10,6 @@ ASTNode *create_node(Token token, ASTNode *left, ASTNode *right) {
     return node;
 }
 
-// Парсит выражение (очень упрощенно)
 ASTNode *parse_expression(Token *tokens, int start, int end) {
     if (start > end) return NULL;
     
