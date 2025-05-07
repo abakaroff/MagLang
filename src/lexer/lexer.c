@@ -1,70 +1,82 @@
 #include "lexer.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
-// Проверка, является ли слово ключевым
-static int is_keyword(const char *word) {
-    if (strcmp(word, "if") == 0) return 1;
-    if (strcmp(word, "else") == 0) return 1;
-    if (strcmp(word, "print") == 0) return 1;
-    return 0;
+bool in_keyword(const char *word){
+    const char *keywords[] = {
+        "if", "else", "for",
+        "while", "print"
+    };
+    for (int i = 0; i < 5; i++){
+        if (strcmp(word, keywords[i]) == 0) return true;
+    }
+    return false;
 }
 
-// Разбивает входную строку на токены
-void tokenize(const char *input, Token *tokens, int *count) {
+void tokensize(const char *input, Token *tokens, int *token_count){
     const char *p = input;
-    *count = 0;
-    
-    // Пропускаем пробелы
-    while (*p == ' ') p++;
-    
-    // Обрабатываем числа
-    if (isdigit(*p)) {
-        int i = 0;
-        while (isdigit(*p) || *p == '.') {
-            tokens[*count].value[i++] = *p++;
+    *token_count = 0;
+
+    while (*p){
+        if (isspace(*p)){
+            p++;
+            continue;
         }
-        tokens[*count].value[i] = '\0';
-        tokens[*count].type = TOKEN_NUMBER;
-        (*count)++;
-        return;
-    }
-    
-    // Обрабатываем строки
-    if (*p == '"') {
+
+        // числа
+        if (isdigit(*p)){
+            int i = 0;
+            while (isdigit(*p) || *p == "."){
+                tokens[*token_count].value[i++] = *p++;
+            }
+            tokens[*token_count].value[i] = "\0";
+            tokens[*token_count].type = TOKEN_NUMBER;
+            (*token_count)++;
+            continue;
+        }
+        // строки для print
+        if (*p == '"'){
+            p++;
+            int i = 0;
+
+            while (*p != '"' && *p){
+                tokens[*token_count].value[i++] = *p++;
+            }
+            tokens[*token_count].value[i] = '\0';
+            tokens[*token_count].type = TOKEN_STRING;
+            (*token_count)++;
+            if (*p == '"') p++;
+            continue;
+        }
+
+        // операторы и скобки
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '=' || 
+            *p == '{' || *p == '}' || *p == '(' || *p == ')' || *p == ';') {
+            tokens[*token_count].value[0] = *p;
+            tokens[*token_count].value[1] = '\0';
+            tokens[*token_count].type = 
+                (*p == '{') ? TOKEN_LBRACE :
+                (*p == '}') ? TOKEN_RBRACE :
+                (*p == '(') ? TOKEN_LPAREN :
+                (*p == ')') ? TOKEN_RPAREN :
+                (*p == ';') ? TOKEN_SEMICOLON :
+                TOKEN_OPERATOR;
+            (*token_count)++;
+            p++;
+            continue;
+        }
+
+        // ключевые слова и переменные
+        if (isalpha(*p)) {
+            int i = 0;
+            while (isalnum(*p)) tokens[*token_count].value[i++] = *p++;
+            tokens[*token_count].value[i] = '\0';
+            tokens[*token_count].type = is_keyword(tokens[*token_count].value) ? TOKEN_KEYWORD : TOKEN_VARIABLE;
+            (*token_count)++;
+            continue;
+        }
         p++;
-        int i = 0;
-        while (*p != '"' && *p) {
-            tokens[*count].value[i++] = *p++;
-        }
-        tokens[*count].value[i] = '\0';
-        tokens[*count].type = TOKEN_STRING;
-        (*count)++;
-        if (*p == '"') p++;
-        return;
     }
-    
-    // Обрабатываем операторы
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '=') {
-        tokens[*count].value[0] = *p++;
-        tokens[*count].value[1] = '\0';
-        tokens[*count].type = TOKEN_OPERATOR;
-        (*count)++;
-        return;
-    }
-    
-    // Обрабатываем переменные и ключевые слова
-    if (isalpha(*p)) {
-        int i = 0;
-        while (isalnum(*p)) {
-            tokens[*count].value[i++] = *p++;
-        }
-        tokens[*count].value[i] = '\0';
-        tokens[*count].type = is_keyword(tokens[*count].value) ? TOKEN_KEYWORD : TOKEN_VARIABLE;
-        (*count)++;
-        return;
-    }
-    
-    // Если ничего не распознано
-    tokens[*count].type = TOKEN_EOF;
+    tokens[*token_count].type = TOKEN_EOF;
 }
