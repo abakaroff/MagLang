@@ -1,15 +1,17 @@
 #pragma once
-#include "../lexer/lexer.h"
+#include "lexer.h"
 
-// Узел абстрактного синтаксического дерева (AST)
 typedef struct ASTNode {
-    Token token;       // Токен узла
-    struct ASTNode *left;  // Левый потомок
-    struct ASTNode *right; // Правый потомок
+    Token token;
+    struct ASTNode *left;
+    struct ASTNode *right;
+    struct ASTNode **body;
+    int body_count;
+    struct ASTNode **else_body;
+    int else_body_count;
 } ASTNode;
 
-// Создает новый узел AST
-ASTNode *create_node(Token token, ASTNode *left, ASTNode *right);
-
-// Парсит выражение
 ASTNode *parse_expression(Token *tokens, int start, int end);
+ASTNode *parse_if(Token *tokens, int *pos);
+ASTNode *parse_while(Token *tokens, int *pos);
+ASTNode *parse_for(Token *tokens, int *pos);
