@@ -50,3 +50,96 @@ ASTNode **parse_block(Token *tokens, int *pos, int *stmt_count) {
     if (tokens[*pos].type == TOKEN_RBRACE) (*pos)++;
     return stmts;
 }
+
+ASTNode *parse_if(Token *tokens, int *pos) {
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->token = tokens[*pos];
+    node->body = NULL;
+    node->else_body = NULL;
+    node->body_count = node->else_body_count = 0;
+    node->left = node->right = NULL;
+    (*pos)++;
+
+    if (tokens[*pos].type != TOKEN_LPAREN) return NULL;
+    (*pos)++;
+
+    int cond_end = *pos;
+    while (tokens[cond_end].type != TOKEN_RPAREN) cond_end++;
+    node->left = parse_expression(tokens, *pos, cond_end - 1);
+    *pos = cond_end + 1;
+
+    if (tokens[*pos].type != TOKEN_LBRACE) return NULL;
+    (*pos)++;
+    node->body = parse_block(tokens, pos, &node->body_count);
+
+    if (tokens[*pos].type == TOKEN_KEYWORD && strcmp(tokens[*pos].value, "else") == 0) {
+        (*pos)++;
+        if (tokens[*pos].type != TOKEN_LBRACE) return NULL;
+        (*pos)++;
+        node->else_body = parse_block(tokens, pos, &node->else_body_count);
+    }
+
+    return node;
+}
+
+ASTNode *parse_while(Token *tokens, int *pos) {
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->token = tokens[*pos];
+    node->body = NULL;
+    node->body_count = 0;
+    node->left = node->right = NULL;
+    (*pos)++;
+
+    if (tokens[*pos].type != TOKEN_LPAREN) return NULL;
+    (*pos)++;
+
+    int cond_end = *pos;
+    while (tokens[cond_end].type != TOKEN_RPAREN) cond_end++;
+    node->left = parse_expression(tokens, *pos, cond_end - 1);
+    *pos = cond_end + 1;
+
+    if (tokens[*pos].type != TOKEN_LBRACE) return NULL;
+    (*pos)++;
+    node->body = parse_block(tokens, pos, &node->body_count);
+
+    return node;
+}
+
+ASTNode *parse_for(Token *tokens, int *pos){
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->token = tokens[*pos];
+    node->body = NULL;
+    node->body_count = 0;
+    node->left = node->right = NULL;
+    (*pos)++;
+
+    if (tokens[*pos].type != TOKEN_LPAREN) return NULL;
+    (*pos)++;
+
+    // Инициализация
+    int init_start = *pos;
+    while (tokens[*pos].type != TOKEN_SEMICOLON) (*pos)++;
+    ASTNode *init = parse_expression(tokens, init_start, *pos - 1);
+    (*pos)++;
+
+    // Условие
+    int cond_start = *pos;
+    while (tokens[*pos].type != TOKEN_SEMICOLON) (*pos)++;
+    ASTNode *cond = parse_expression(tokens, cond_start, *pos - 1);
+    (*pos)++;
+
+    int incr_start = *pos;
+    while (tokens[*pos].type != TOKEN_RPAREN) (*pos)++;
+    ASTNode *incr = parse_expression(tokens, incr_start, *pos - 1);
+    (*pos)++;
+
+    if (tokens[*pos].type != TOKEN_LBRACE) return NULL;
+    (*pos)++;
+
+    node->body = parse_block(tokens, pos, &node->body_count);
+    init->right = cond;
+    cond->right = incr;
+    node->left = init;
+
+    return node;
+}
