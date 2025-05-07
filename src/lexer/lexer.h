@@ -1,20 +1,23 @@
 #pragma once
 
-// Типы токенов
 typedef enum {
-    TOKEN_NUMBER,    // Числа (42, 3.14)
-    TOKEN_VARIABLE,  // Переменные (x, count)
-    TOKEN_OPERATOR,  // Операторы (+, -, *, /, =)
-    TOKEN_KEYWORD,   // Ключевые слова (if, else, print)
-    TOKEN_STRING,    // Строки в кавычках
-    TOKEN_EOF        // Конец ввода
+    TOKEN_NUMBER,
+    TOKEN_VARIABLE,
+    TOKEN_OPERATOR,   // +, -, *, /, =
+    TOKEN_KEYWORD,    // if, else, for, while, print
+    TOKEN_STRING,     // "текст"
+    TOKEN_LBRACE,     // {
+    TOKEN_RBRACE,     // }
+    TOKEN_LPAREN,     // (
+    TOKEN_RPAREN,     // )
+    TOKEN_SEMICOLON,  // ;
+    TOKEN_EOF,
+    TOKEN_UNKNOWN
 } TokenType;
 
-// Структура токена
 typedef struct {
     TokenType type;
-    char value[32]; // Значение токена
+    char value[50];
 } Token;
 
-// Функция разбиения строки на токены
-void tokenize(const char *input, Token *tokens, int *count);
+void tokenize(const char *input, Token *tokens, int *token_count);
