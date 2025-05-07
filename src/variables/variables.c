@@ -1,60 +1,75 @@
 #include "variables.h"
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdlib.h>
+#include <ctype.h>  
 
-#define MAX_VARS 50
-
-// Структура для хранения переменной
-typedef struct {
-    char name[32];
-    double value;
-} Variable;
-
+#define MAX_VARS 100
 static Variable vars[MAX_VARS];
 static int var_count = 0;
 
-// Инициализация переменных
-void init_vars() {
+void init_vars(){
     var_count = 0;
 }
 
-// Установка значения переменной
-void set_var(const char* name, double value) {
-    // Проверяем, есть ли уже такая переменная
-    for (int i = 0; i < var_count; i++) {
-        if (strcmp(vars[i].name, name) == 0) {
+void set_vars(const char* name, double value){
+    for (int i = 0; i < var_count; i++){
+        if (strcmp(vars[i].name, name) == 0){
             vars[i].value = value;
             return;
         }
     }
-    
-    // Добавляем новую переменную
-    if (var_count < MAX_VARS) {
+    if (var_count < MAX_VARS){
         strcpy(vars[var_count].name, name);
         vars[var_count].value = value;
         var_count++;
-    } else {
-        printf("Too many variables!\n");
+    }
+    else{
+        printf("Error");
     }
 }
 
-// Получение значения переменной
-double get_var(const char* name) {
-    for (int i = 0; i < var_count; i++) {
-        if (strcmp(vars[i].name, name) == 0) {
+double get_var(const char* name){
+    for (int i = 0; i < var_count; i++){
+        if (strcmp(vars[i].name, name)){
             return vars[i].value;
         }
     }
-    return 0.0; // Возвращаем 0, если переменная не найдена
+    return 0;
 }
 
-// Проверка, является ли строка числом
-int is_number(const char* s) {
+void print_all_vars() {
+    for (int i = 0; i < var_count; i++) {
+        printf("%s = %f\n", vars[i].name, vars[i].value);
+    }
+}
+
+int evaluate_condition(const char* condition) {    
+    char var1[50] = {0}, op[3] = {0}, var2[50] = {0};
+    if (sscanf(condition, "%49s %2s %49s", var1, op, var2) != 3) {
+        printf("Error: Condition must be in format 'var op var'\n");
+        return 0;
+    }
+
+    double val1 = is_number(var1) ? atof(var1) : get_var(var1);
+    double val2 = is_number(var2) ? atof(var2) : get_var(var2);
+    
+    if (strcmp(op, "<") == 0) return val1 < val2;
+    if (strcmp(op, ">") == 0) return val1 > val2;
+    if (strcmp(op, "<=") == 0) return val1 <= val2;
+    if (strcmp(op, ">=") == 0) return val1 >= val2;
+    if (strcmp(op, "==") == 0) return val1 == val2;
+    if (strcmp(op, "!=") == 0) return val1 != val2;
+
+    printf("Error: Unknown operator '%s'\n", op);
+    return 0;
+}
+
+bool is_number(const char* s) {
     if (*s == '-') s++;
     while (*s) {
-        if (!isdigit(*s)) return 0;
+        if (!isdigit(*s) && *s != '.') return false;
         s++;
     }
-    return 1;
+    return true;
 }
